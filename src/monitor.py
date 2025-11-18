@@ -84,8 +84,7 @@ class TradingMonitor:
         
         deal_list = []
         for deal in deals:
-            # Skip balance operations
-            if deal.entry == 2:  # DEAL_ENTRY_OUT or DEAL_ENTRY_INOUT
+            if deal.entry == 2:
                 deal_list.append({
                     'Time': datetime.fromtimestamp(deal.time).strftime('%H:%M:%S'),
                     'Ticket': deal.ticket,
@@ -98,7 +97,7 @@ class TradingMonitor:
                 })
         
         df = pd.DataFrame(deal_list)
-        return df.tail(20) if not df.empty else df  # Last 20 trades
+        return df.tail(20) if not df.empty else df 
     
     def get_performance_stats(self):
         """Calculate today's performance statistics"""
@@ -108,7 +107,7 @@ class TradingMonitor:
         if deals is None or len(deals) == 0:
             return None
         
-        closed_deals = [d for d in deals if d.entry == 2]  # Only closed positions
+        closed_deals = [d for d in deals if d.entry == 2]  
         
         if len(closed_deals) == 0:
             return None
@@ -150,7 +149,7 @@ class TradingMonitor:
         print()
         
         # Account Summary
-        print("📊 ACCOUNT SUMMARY")
+        print("ACCOUNT SUMMARY")
         print("-" * 100)
         account = self.get_account_summary()
         if account:
@@ -159,7 +158,7 @@ class TradingMonitor:
         print()
         
         # Open Positions
-        print("📈 OPEN POSITIONS")
+        print("OPEN POSITIONS")
         print("-" * 100)
         positions = self.get_open_positions()
         if not positions.empty:
@@ -169,7 +168,7 @@ class TradingMonitor:
         print()
         
         # Today's Performance
-        print("💰 TODAY'S PERFORMANCE")
+        print("TODAY'S PERFORMANCE")
         print("-" * 100)
         stats = self.get_performance_stats()
         if stats:
@@ -180,7 +179,7 @@ class TradingMonitor:
         print()
         
         # Recent History
-        print("📜 RECENT TRADE HISTORY (Last 20)")
+        print("RECENT TRADE HISTORY (Last 20)")
         print("-" * 100)
         history = self.get_today_history()
         if not history.empty:
@@ -211,7 +210,7 @@ class TradingMonitor:
                 self.display_dashboard()
                 time.sleep(refresh_interval)
         except KeyboardInterrupt:
-            print("\n\n✅ Monitor stopped by user")
+            print("\n\nMonitor stopped by user")
 
 
 def run_standalone_monitor(symbol=None, refresh_interval=5):
@@ -224,10 +223,10 @@ def run_standalone_monitor(symbol=None, refresh_interval=5):
         python monitor.py --symbol EURUSD --interval 10
     """
     if not mt5.initialize():
-        print("❌ Failed to initialize MT5")
+        print("Failed to initialize MT5")
         return
     
-    print(f"✅ MT5 initialized successfully")
+    print(f"MT5 initialized successfully")
     
     monitor = TradingMonitor(symbol=symbol)
     monitor.run_monitor(refresh_interval=refresh_interval)
@@ -248,14 +247,14 @@ if __name__ == "__main__":
     # Initialize MT5
     if args.mt5_path:
         if not mt5.initialize(args.mt5_path):
-            print(f"❌ Failed to initialize MT5 with path: {args.mt5_path}")
+            print(f"Failed to initialize MT5 with path: {args.mt5_path}")
             exit(1)
     else:
         if not mt5.initialize():
-            print("❌ Failed to initialize MT5")
+            print("Failed to initialize MT5")
             exit(1)
     
-    print(f"✅ MT5 initialized successfully")
+    print(f"MT5 initialized successfully")
     
     # Run monitor
     monitor = TradingMonitor(symbol=args.symbol)
