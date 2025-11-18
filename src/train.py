@@ -1,7 +1,7 @@
 # src/train.py
 import joblib
 import os
-import pandas as pd  # Make sure this import exists
+import pandas as pd 
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
@@ -28,7 +28,6 @@ def train_model(csv_path, model_out_path=None):
         X, y, test_size=0.2, shuffle=True, random_state=42, stratify=y
     )
 
-    # Create a pipeline that preserves feature names
     clf = RandomForestClassifier(
         n_estimators=100,
         max_depth=10,
@@ -41,7 +40,6 @@ def train_model(csv_path, model_out_path=None):
     
     clf.fit(X_train, y_train)
 
-    # Save model with feature names and training data info
     model_data = {
         'model': clf,
         'feature_names': feature_cols,
@@ -60,12 +58,10 @@ def train_model(csv_path, model_out_path=None):
     print("Train Acc:", clf.score(X_train, y_train))
     print("Test Acc:", clf.score(X_test, y_test))
     
-    # Detailed performance report
     y_pred = clf.predict(X_test)
     print("\nClassification Report:")
     print(classification_report(y_test, y_pred, target_names=le.classes_))
     
-    # Check signal distribution
     print("\nSignal distribution in training data:")
     print(df['signal'].value_counts())
     
