@@ -13,7 +13,6 @@ def predict_from_row(row_dict):
     df = pd.DataFrame([row_dict])
     df['timestamp'] = pd.to_datetime(df['timestamp'])
     df['symbol_enc'] = symbol_enc.transform([df.loc[0,'symbol']])[0] if 'symbol' in df.columns else 0
-    # Add indicators - note for single rows some indicators will be NaN; it's better to provide a window.
     df = add_all_indicators(df)
     features = ['open','high','low','close','volume','hl_range','oc_change','return',
                 'ema_5','ema_20','sma_5','sma_20','rsi','atr','symbol_enc']
