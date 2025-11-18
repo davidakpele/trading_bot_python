@@ -5,21 +5,21 @@ def check_stop_loss_status():
     """Check if stop losses are properly set on all positions"""
     
     if not connect_mt5():
-        print("❌ Failed to connect to MT5")
+        print("Failed to connect to MT5")
         return
     
-    print("🔍 CHECKING STOP LOSS STATUS")
+    print("CHECKING STOP LOSS STATUS")
     print("=" * 60)
     
     # Get all positions
     positions = get_open_positions()
     
     if not positions:
-        print("✅ No open positions found")
+        print("No open positions found")
         disconnect_mt5()
         return
     
-    print(f"📊 Found {len(positions)} open positions:")
+    print(f"Found {len(positions)} open positions:")
     print("-" * 60)
     
     risky_count = 0
@@ -32,24 +32,24 @@ def check_stop_loss_status():
         
         # Calculate distance to SL in pips
         if pos.sl > 0:
-            if pos.type == mt5.ORDER_TYPE_SELL:  # SELL position
+            if pos.type == mt5.ORDER_TYPE_SELL:  
                 sl_distance = (pos.sl - pos.price_current) / pip_size
-            else:  # BUY position
+            else: 
                 sl_distance = (pos.price_current - pos.sl) / pip_size
             
-            status = "✅ PROTECTED"
+            status = "PROTECTED"
             protected_count += 1
         else:
             sl_distance = 0
-            status = "❌ NO STOP LOSS"
+            status = "NO STOP LOSS"
             risky_count += 1
         
         print(f"Symbol: {pos.symbol}")
         print(f"Type:   {'SELL' if pos.type == mt5.ORDER_TYPE_SELL else 'BUY'}")
         print(f"Open:   {pos.price_open:.5f}")
         print(f"Current: {pos.price_current:.5f}")
-        print(f"SL:     {pos.sl:.5f}" if pos.sl > 0 else "SL:     ❌ NONE")
-        print(f"TP:     {pos.tp:.5f}" if pos.tp > 0 else "TP:     ⚠️ NONE")
+        print(f"SL:     {pos.sl:.5f}" if pos.sl > 0 else "SL:  NONE")
+        print(f"TP:     {pos.tp:.5f}" if pos.tp > 0 else "TP:  NONE")
         print(f"Status: {status}")
         if pos.sl > 0:
             print(f"SL Distance: {sl_distance:.1f} pips")
@@ -57,32 +57,32 @@ def check_stop_loss_status():
         print("-" * 40)
     
     # Summary
-    print("\n📈 SUMMARY:")
-    print(f"Protected positions: {protected_count} ✅")
-    print(f"Risky positions: {risky_count} ❌")
+    print("\nSUMMARY:")
+    print(f"Protected positions: {protected_count}")
+    print(f"Risky positions: {risky_count} ")
     
     if risky_count > 0:
-        print(f"\n🚨 EMERGENCY: {risky_count} positions without stop loss!")
+        print(f"\n EMERGENCY: {risky_count} positions without stop loss!")
         print("Fixing automatically...")
         add_stop_loss_to_all_positions(sl_pips=10)
         
         # Verify fix
-        print("\n🔍 VERIFYING FIX...")
+        print("\nVERIFYING FIX...")
         positions_after = get_open_positions()
         still_risky = sum(1 for p in positions_after if p.sl == 0.0)
         
         if still_risky == 0:
-            print("✅ SUCCESS: All positions now have stop loss protection!")
+            print(" SUCCESS: All positions now have stop loss protection!")
         else:
-            print(f"❌ FAILED: {still_risky} positions still without stop loss")
+            print(f" FAILED: {still_risky} positions still without stop loss")
     else:
-        print("🎉 All positions are properly protected with stop loss!")
+        print("All positions are properly protected with stop loss!")
     
     disconnect_mt5()
 
 def test_stop_loss_calculation():
     """Test if stop loss calculations are correct"""
-    print("\n🧪 TESTING STOP LOSS CALCULATIONS")
+    print("\nTESTING STOP LOSS CALCULATIONS")
     print("=" * 50)
     
     test_cases = [
