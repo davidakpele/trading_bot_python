@@ -1,10 +1,8 @@
-# main.py - ALTERNATIVE VERSION (if you don't want to modify monitor.py)
+
 import argparse
 import os
 import sys
 import MetaTrader5 as mt5
-
-# Add the src directory to Python path
 sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
 
 from data.generate_synthetic import main as gen_main
@@ -14,17 +12,16 @@ from src.monitor import TradingMonitor
 
 def run_monitor_with_path(symbol=None, refresh_interval=5, mt5_path=None):
     """Wrapper function to handle MT5 path for monitor"""
-    # Initialize MT5 with the provided path
     if mt5_path:
         if not mt5.initialize(mt5_path):
-            print(f"❌ Failed to initialize MT5 with path: {mt5_path}")
+            print(f"Failed to initialize MT5 with path: {mt5_path}")
             return
     else:
         if not mt5.initialize():
-            print("❌ Failed to initialize MT5")
+            print("Failed to initialize MT5")
             return
     
-    print(f"✅ MT5 initialized successfully")
+    print(f"MT5 initialized successfully")
     
     monitor = TradingMonitor(symbol=symbol)
     monitor.run_monitor(refresh_interval=refresh_interval)
@@ -48,15 +45,15 @@ def run():
     args = parser.parse_args()
 
     if args.action == "gen-data":
-        print("🔄 Generating synthetic data...")
+        print("Generating synthetic data...")
         gen_main(out_path=args.csv, minutes_per_symbol=args.minutes)
         
     elif args.action == "train":
-        print("🤖 Training model...")
+        print("Training model...")
         train_model(args.csv)
         
     elif args.action == "live":
-        print("🚀 Starting live trading bot...")
+        print("Starting live trading bot...")
         run_live(
             symbol=args.symbol, 
             lots=args.lots, 
@@ -67,7 +64,7 @@ def run():
         )
         
     elif args.action == "monitor":
-        print("📊 Starting trading monitor...")
+        print("Starting trading monitor...")
         run_monitor_with_path(
             symbol=args.symbol,
             refresh_interval=args.interval,
