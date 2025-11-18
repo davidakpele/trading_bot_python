@@ -92,8 +92,6 @@ def place_order_market_improved(symbol, order_type, lots=0.01, sl_pips=8, tp_pip
             if not mt5.symbol_select(symbol, True):
                 logger.error(f"Failed to select symbol {symbol}")
                 return None
-        
-        # Get fresh tick data for each attempt
         tick = mt5.symbol_info_tick(symbol)
         if tick is None:
             logger.error(f"Could not get tick for {symbol}")
@@ -102,27 +100,21 @@ def place_order_market_improved(symbol, order_type, lots=0.01, sl_pips=8, tp_pip
         
         digits = symbol_info.digits
         pip_size = 0.0001 if digits == 5 else 0.01 if digits == 3 else 0.001
-        
-        # Calculate price and SL/TP based on current market
         if order_type == 'buy':
             price = tick.ask
             order_type_mt5 = mt5.ORDER_TYPE_BUY
             sl = round(price - sl_pips * pip_size, digits) if sl_pips else 0.0
             tp = round(price + tp_pips * pip_size, digits) if tp_pips else 0.0
-        else:  # sell
+        else: 
             price = tick.bid
             order_type_mt5 = mt5.ORDER_TYPE_SELL
             sl = round(price + sl_pips * pip_size, digits) if sl_pips else 0.0
             tp = round(price - tp_pips * pip_size, digits) if tp_pips else 0.0
-        
-        # Increase deviation on retries
         current_deviation = deviation + (attempt * 10)
-        
-        # Try FOK first, then fallback to RETURN on retries
         if attempt < 2:
-            filling_type = mt5.ORDER_FILLING_FOK  # Fill-or-Kill
+            filling_type = mt5.ORDER_FILLING_FOK 
         else:
-            filling_type = mt5.ORDER_FILLING_RETURN  # Return/Market execution
+            filling_type = mt5.ORDER_FILLING_RETURN  
         
         request = {
             "action": mt5.TRADE_ACTION_DEAL,
@@ -152,22 +144,22 @@ def place_order_market_improved(symbol, order_type, lots=0.01, sl_pips=8, tp_pip
             logger.info(f"  Requested: {price:.5f}, Executed: {result.price:.5f}, Volume: {result.volume}")
             return result
             
-        elif result.retcode == mt5.TRADE_RETCODE_REQUOTE:  # 10027
+        elif result.retcode == mt5.TRADE_RETCODE_REQUOTE:  
             logger.warning(f"Requote on attempt {attempt+1}/{max_retries}")
             logger.info(f"  Requested: {price:.5f}, Deviation: {current_deviation}")
             time.sleep(0.3)
             continue
             
-        elif result.retcode == mt5.TRADE_RETCODE_PRICE_OFF:  # 10015 - Invalid price
+        elif result.retcode == mt5.TRADE_RETCODE_PRICE_OFF:  
             logger.warning(f"Invalid price on attempt {attempt+1}, refreshing...")
             time.sleep(0.2)
             continue
             
-        elif result.retcode == mt5.TRADE_RETCODE_REJECT:  # 10006 - Request rejected
+        elif result.retcode == mt5.TRADE_RETCODE_REJECT:  
             logger.error(f"Order rejected by broker: {result.comment}")
             return result
             
-        elif result.retcode == mt5.TRADE_RETCODE_INVALID_FILL:  # 10030 - Invalid filling
+        elif result.retcode == mt5.TRADE_RETCODE_INVALID_FILL: 
             logger.warning(f"Invalid filling mode, switching to RETURN")
             time.sleep(0.1)
             continue
@@ -203,23 +195,15 @@ def place_order_with_slippage_check(symbol, order_type, lots=0.01, sl_pips=8, tp
             time.sleep(0.1)
             continue
         
-        # Get initial price
         initial_price = tick.ask if order_type == 'buy' else tick.bid
-        
-        # Place order with generous deviation
         result = place_order_market_improved(symbol, order_type, lots, sl_pips, tp_pips, 
                                              deviation=100, max_retries=1)
-        
         if result and result.retcode == mt5.TRADE_RETCODE_DONE:
-            # Check slippage
             executed_price = result.price
             slippage = abs(executed_price - initial_price) / pip_size
-            
             if slippage > max_slippage_pips:
                 logger.warning(f"Slippage too high: {slippage:.2f} pips (max: {max_slippage_pips})")
                 logger.warning(f"  Initial: {initial_price:.5f}, Executed: {executed_price:.5f}")
-                
-                # Close the position immediately
                 positions = mt5.positions_get(symbol=symbol)
                 if positions and len(positions) > 0:
                     close_position(positions[-1])
@@ -298,7 +282,6 @@ def place_order(symbol, order_type, lots=0.01, price=None, sl=None, tp=None, dev
     """
     logger.warning("Using legacy place_order - consider switching to place_order_market_improved")
     
-    # If sl/tp are provided as prices, calculate pips
     if sl or tp:
         symbol_info = mt5.symbol_info(symbol)
         tick = mt5.symbol_info_tick(symbol)
@@ -311,8 +294,6 @@ def place_order(symbol, order_type, lots=0.01, price=None, sl=None, tp=None, dev
             tp_pips = abs(tp - current_price) / pip_size if tp else 12
             
             return place_order_market_improved(symbol, order_type, lots, sl_pips, tp_pips, deviation, max_retries)
-    
-    # Default values
     return place_order_market_improved(symbol, order_type, lots, 8, 12, deviation, max_retries)
 
 
@@ -341,11 +322,9 @@ def add_stop_loss_to_position(position_ticket, sl_pips=10):
     
     digits = symbol_info.digits
     pip_size = 0.0001 if digits == 5 else 0.01 if digits == 3 else 0.001
-    
-    # Calculate stop loss price
-    if position.type == mt5.ORDER_TYPE_SELL:  # SELL position
+    if position.type == mt5.ORDER_TYPE_SELL:  
         sl_price = position.price_open + sl_pips * pip_size
-    else:  # BUY position
+    else: 
         sl_price = position.price_open - sl_pips * pip_size
     
     request = {
@@ -358,9 +337,9 @@ def add_stop_loss_to_position(position_ticket, sl_pips=10):
     
     result = mt5.order_send(request)
     if result and result.retcode == mt5.TRADE_RETCODE_DONE:
-        logger.info(f"✅ Stop loss added to position {position_ticket}: SL={sl_price:.5f}")
+        logger.info(f"Stop loss added to position {position_ticket}: SL={sl_price:.5f}")
     elif result:
-        logger.error(f"❌ Failed to add stop loss: {result.retcode} - {result.comment}")
+        logger.error(f"Failed to add stop loss: {result.retcode} - {result.comment}")
     
     return result
 
@@ -376,13 +355,12 @@ def add_stop_loss_to_all_positions(sl_pips=10):
     
     fixed_count = 0
     for position in positions:
-        # Check if position already has stop loss
-        if position.sl == 0.0:  # No stop loss set
+        if position.sl == 0.0: 
             result = add_stop_loss_to_position(position.ticket, sl_pips)
             if result and result.retcode == mt5.TRADE_RETCODE_DONE:
                 fixed_count += 1
     
-    logger.info(f"✅ Added stop loss to {fixed_count} positions")
+    logger.info(f"Added stop loss to {fixed_count} positions")
     
     
 
@@ -396,7 +374,7 @@ def check_and_fix_positions():
     
     risky_positions = []
     for position in positions:
-        if position.sl == 0.0:  # No stop loss
+        if position.sl == 0.0: 
             risky_positions.append({
                 'ticket': position.ticket,
                 'symbol': position.symbol,
@@ -406,13 +384,11 @@ def check_and_fix_positions():
                 'current_price': position.price_current,
                 'profit': position.profit
             })
-    
+
     if risky_positions:
-        logger.warning(f"🚨 Found {len(risky_positions)} positions without stop loss:")
+        logger.warning(f"Found {len(risky_positions)} positions without stop loss:")
         for pos in risky_positions:
             logger.warning(f"   {pos['symbol']} {pos['type']} (Ticket: {pos['ticket']}, Profit: ${pos['profit']:.2f})")
-        
-        # Auto-fix them
         add_stop_loss_to_all_positions(sl_pips=10)
     else:
-        logger.info("✅ All positions have proper stop loss protection")
+        logger.info("All positions have proper stop loss protection")
