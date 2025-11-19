@@ -325,6 +325,65 @@ Margin Level   : 463392.59%
 +--------------+----------+--------+----------+--------------+-----------+---------+---------+--------+----------+---------------------+
 
 ```
+
+## 🛠️ Installation
+1. **Clone and setup environment**:
+
+```bash
+python -m venv venv
+source venv/bin/activate  # Windows: source venv/Scripts/activate 
+pip install -r requirements.txt
 ---
+````
+
+## 🎯 Usage
+
+# Generate data for model training
+
+```bash
+python main.py gen-data --minutes 5000
+
+python scripts/train_model.py
+````
+
+### Train Models
+
+```bash
+python scripts/train_model.py
+
+or direct
+
+python main.py train --csv data/scalping_large_dataset.csv
+````
+
+### Place order
+
+```bash
+python main.py live --symbol GBPUSD --lots 0.01 --sl 8 --tp 12 --mt5-path "C:/Program Files/MetaTrader 5/terminal64.exe"
+python main.py live --symbol SYMBOL --lots SIZE --sl STOPLOSS --tp TAKEPROFIT --mt5-path "C:/Program Files/MetaTrader 5/terminal64.exe"
+```
+
+### Deploy API
+
+```bash
+python scripts/deploy_model.py
+```
+### Monitor Drift
+
+```bash
+python scripts/monitor_drift.py
+```
+
+### To RUN the app  use the command below:
+```bash
+python main.py monitor --mt5-path "C:/Program Files/MetaTrader 5/terminal64.exe"
+```
+
+### TEST
+
+```bash 
+python test_mt5_filter.py
+```
+
 
 **🚀 Happy Trading! Remember: Always test thoroughly and trade responsibly.**

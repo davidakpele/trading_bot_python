@@ -38,7 +38,6 @@ def label_signals(df):
     df['signal'] = 'hold'
     df.loc[df['sma5'] > df['sma20'] * 1.00005, 'signal'] = 'buy'
     df.loc[df['sma5'] < df['sma20'] * 0.99995, 'signal'] = 'sell'
-    # random noise labels to emulate imperfect labels
     rand_idx = np.random.choice(df.index, size=int(len(df)*0.01), replace=False)
     df.loc[rand_idx, 'signal'] = np.random.choice(['buy','sell','hold'], size=len(rand_idx))
     return df.drop(columns=['sma5','sma20'])
