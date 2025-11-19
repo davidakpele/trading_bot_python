@@ -296,6 +296,69 @@ We've successfully built a **complete AI-powered trading system** that:
 
 The system is **production-ready** for demo trading and provides a solid foundation for further development and optimization.
 
+
+
+```bash 
+
+
+====================================================================================================
+🤖 SCALPING BOT MONITOR - 2025-11-18 12:13:42
+====================================================================================================
+
+📊 ACCOUNT SUMMARY
+----------------------------------------------------------------------------------------------------
+Balance        : $100000.00
+Equity         : $100000.12
+Margin         : $21.58
+Free Margin    : $99978.54
+Profit         : $0.12
+Margin Level   : 463392.59%
+
+📈 OPEN POSITIONS
+----------------------------------------------------------------------------------------------------
++--------------+----------+--------+----------+--------------+-----------+---------+---------+--------+----------+---------------------+
+|       Ticket | Symbol   | Type   |   Volume |   Open Price |   Current | SL      | TP      |   Pips | Profit   | Time                |
++==============+==========+========+==========+==============+===========+=========+=========+========+==========+=====================+
+| 151197640598 | EURUSD   | SELL   |     0.01 |      1.15822 |   1.15827 | 1.15902 | 1.15702 |   -0.5 | $-0.05   | 2025-11-18 13:55:02 |
++--------------+----------+--------+----------+--------------+-----------+---------+---------+--------+----------+---------------------+
+| 151197674429 | USDJPY   | SELL   |     0.01 |    155.4     | 155.373   | None    | None    |    2.7 | $0.17    | 2025-11-18 14:01:51 |
++--------------+----------+--------+----------+--------------+-----------+---------+---------+--------+----------+---------------------+
+
+```
+
+## 🛠️ Installation
+1. **Clone and setup environment**:
+
+```bash
+python -m venv venv
+source venv/bin/activate  # Windows: source venv/Scripts/activate 
+pip install -r requirements.txt
 ---
+````
+
+## 🎯 Usage
+
+### Train Models
+
+```bash
+python scripts/train_model.py
+````
+
+
+### Deploy API
+
+```bash
+python scripts/deploy_model.py
+```
+### Monitor Drift
+
+```bash
+python scripts/monitor_drift.py
+```
+
+### To RUN the app  use the command below:
+```bash
+python main.py monitor --mt5-path "C:/Program Files/MetaTrader 5/terminal64.exe"
+```
 
 **🚀 Happy Trading! Remember: Always test thoroughly and trade responsibly.**
