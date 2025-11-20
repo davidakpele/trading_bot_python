@@ -28,22 +28,17 @@ def add_all_indicators(df):
     
     df['rsi'] = df.groupby('symbol')['close'].transform(calculate_rsi)
     
-    # FIXED ATR CALCULATION
     def calculate_atr_single_symbol(df_symbol):
         """Calculate ATR for a single symbol"""
         high = df_symbol['high']
         low = df_symbol['low']
         close = df_symbol['close'].shift()
-        
         tr1 = high - low
         tr2 = (high - close).abs()
         tr3 = (low - close).abs()
-        
         tr = np.maximum(tr1, np.maximum(tr2, tr3))
         atr = tr.rolling(window=14, min_periods=1).mean()
         return atr.fillna(0)
-    
-    # Calculate ATR for each symbol separately
     atr_results = []
     for symbol in df['symbol'].unique():
         symbol_data = df[df['symbol'] == symbol].copy()

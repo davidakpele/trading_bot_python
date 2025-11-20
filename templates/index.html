@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trading Bot Controller</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .card h2 {
+            color: #333;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #555;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #00b894 0%, #00a085 100%);
+        }
+        
+        .trade-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .trade-item {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .trade-item:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+        
+        .trade-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .trade-symbol {
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: #333;
+        }
+        
+        .trade-type {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        
+        .trade-type.buy {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .trade-type.sell {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .trade-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .trade-actions {
+            margin-top: 10px;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .status {
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            text-align: center;
+        }
+        
+        .status.executed {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status.pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .status.closed {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        .status.failed {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-weight: 500;
+        }
+        
+        .alert.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .alert.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .alert.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .health-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .health-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        
+        .health-dot.healthy {
+            background: #00b894;
+        }
+        
+        .health-dot.unhealthy {
+            background: #ff6b6b;
+        }
+ .profit-positive {
+        color: #00b894;
+        font-weight: bold;
+    }
+    
+    .profit-negative {
+        color: #ff6b6b;
+        font-weight: bold;
+    }
+    
+    .profit-neutral {
+        color: #6c757d;
+        font-weight: bold;
+    }
+    
+    .profit-badge {
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 0.8rem;
+        font-weight: bold;
+    }
+    
+    .profit-badge.positive {
+        background: #d4edda;
+        color: #155724;
+    }
+    
+    .profit-badge.negative {
+        background: #f8d7da;
+        color: #721c24;
+    }
+    
+    .profit-badge.neutral {
+        background: #e2e3e5;
+        color: #383d41;
+    }
+</style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 Trading Bot Controller</h1>
+            <p>Manage your trades and monitor the trading bot</p>
+        </div>
+
+        <div class="health-status" id="healthStatus">
+            <div class="health-dot" id="healthDot"></div>
+            <span id="healthText">Checking system status...</span>
+        </div>
+
+        <div class="dashboard">
+            <!-- Trade Placement Card -->
+            <div class="card">
+                <h2>📈 Place New Trade</h2>
+                <div id="tradeResult"></div>
+                <form id="tradeForm">
+                    <div class="form-group">
+                        <label for="symbol">Symbol:</label>
+                        <input type="text" id="symbol" class="form-control" value="EURUSD" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="type">Trade Type:</label>
+                        <select id="type" class="form-control" required>
+                            <option value="buy">BUY</option>
+                            <option value="sell">SELL</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="lots">Lot Size:</label>
+                        <input type="number" id="lots" class="form-control" value="0.01" step="0.01" min="0.01" max="100" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="sl_points">Stop Loss (points):</label>
+                        <input type="number" id="sl_points" class="form-control" value="20" step="1" min="0">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="tp_points">Take Profit (points):</label>
+                        <input type="number" id="tp_points" class="form-control" value="40" step="1" min="0">
+                    </div>
+                    
+                    <button type="submit" class="btn">🚀 Execute Trade</button>
+                </form>
+            </div>
+
+            <!-- Active Trades Card -->
+            <div class="card">
+                <h2>📊 Active Trades</h2>
+                <div class="trade-actions">
+                    <button onclick="loadActiveTrades()" class="btn">🔄 Refresh</button>
+                    <button onclick="stopAllTrades()" class="btn btn-danger">🛑 Stop All</button>
+                </div>
+                <div id="activeTrades" class="trade-list">
+                    Loading active trades...
+                </div>
+            </div>
+
+            <!-- Trade History Card -->
+            <div class="card" style="grid-column: 1 / -1;">
+                <h2>📋 Trade History</h2>
+                <div class="trade-actions">
+                    <button onclick="loadTradeHistory()" class="btn">🔄 Refresh History</button>
+                    <select id="historyFilter" onchange="loadTradeHistory()" class="form-control" style="width: auto; display: inline-block; margin-left: 10px;">
+                        <option value="">All Status</option>
+                        <option value="EXECUTED">Executed</option>
+                        <option value="CLOSED">Closed</option>
+                        <option value="PENDING">Pending</option>
+                        <option value="FAILED">Failed</option>
+                    </select>
+                </div>
+                <div id="tradeHistory" class="trade-list">
+                    Loading trade history...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '/api';
+        
+        // Utility function for API calls
+        async function apiCall(endpoint, method = 'GET', data = null) {
+            try {
+                const options = {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                };
+                
+                if (data) {
+                    options.body = JSON.stringify(data);
+                }
+                
+                const response = await fetch(`${API_BASE}${endpoint}`, options);
+                return await response.json();
+            } catch (error) {
+                console.error('API call failed:', error);
+                return {
+                    success: false,
+                    error: 'Network error: ' + error.message
+                };
+            }
+        }
+        
+        // Display alert messages
+        function showAlert(message, type = 'info', containerId = 'tradeResult') {
+            const container = document.getElementById(containerId);
+            const alert = document.createElement('div');
+            alert.className = `alert ${type}`;
+            alert.textContent = message;
+            container.innerHTML = '';
+            container.appendChild(alert);
+            
+            // Auto-remove success/info alerts after 5 seconds
+            if (type === 'success' || type === 'info') {
+                setTimeout(() => {
+                    alert.remove();
+                }, 5000);
+            }
+        }
+        
+        // Health check
+        async function checkHealth() {
+            const result = await apiCall('/health');
+            const healthDot = document.getElementById('healthDot');
+            const healthText = document.getElementById('healthText');
+            
+            if (result.status === 'healthy') {
+                healthDot.className = 'health-dot healthy';
+                healthText.innerHTML = `✅ System Healthy | MT5: ${result.mt5_connected ? 'Connected' : 'Disconnected'} | Active Trades: ${result.active_trades}`;
+            } else {
+                healthDot.className = 'health-dot unhealthy';
+                healthText.innerHTML = `❌ System Unhealthy: ${result.error}`;
+            }
+        }
+        
+        // Place new trade
+        async function placeTrade(event) {
+            if (event) event.preventDefault();
+            
+            const formData = {
+                symbol: document.getElementById('symbol').value.toUpperCase(),
+                type: document.getElementById('type').value,
+                lots: parseFloat(document.getElementById('lots').value),
+                sl_points: parseFloat(document.getElementById('sl_points').value) || 0,
+                tp_points: parseFloat(document.getElementById('tp_points').value) || 0
+            };
+            
+            // Validation
+            if (formData.lots <= 0 || formData.lots > 100) {
+                showAlert('Invalid lot size. Must be between 0.01 and 100', 'error');
+                return;
+            }
+            
+            showAlert('Placing trade...', 'info');
+            
+            const result = await apiCall('/trade/place', 'POST', formData);
+            
+            if (result.success) {
+                showAlert(`✅ Trade executed successfully! Trade ID: ${result.trade_id}`, 'success');
+                document.getElementById('tradeForm').reset();
+                document.getElementById('symbol').value = formData.symbol;
+                document.getElementById('lots').value = '0.01';
+                loadActiveTrades();
+                loadTradeHistory();
+            } else {
+                showAlert(`❌ Trade failed: ${result.error}`, 'error');
+            }
+        }
+        
+        // Close specific trade
+        async function closeTrade(tradeId) {
+            showAlert(`Closing trade ${tradeId}...`, 'info', 'activeTrades');
+            
+            const result = await apiCall(`/trade/close/${tradeId}`, 'POST');
+            
+            if (result.success) {
+                showAlert(`✅ Trade ${tradeId} closed successfully! Profit: ${result.profit}`, 'success', 'activeTrades');
+                loadActiveTrades();
+                loadTradeHistory();
+            } else {
+                showAlert(`❌ Failed to close trade: ${result.error}`, 'error', 'activeTrades');
+            }
+        }
+        
+        // Update stop loss
+        async function updateStopLoss(tradeId) {
+            const newSl = prompt('Enter new stop loss points:');
+            if (newSl === null) return;
+            
+            const slPoints = parseFloat(newSl);
+            if (isNaN(slPoints) || slPoints < 0) {
+                showAlert('Invalid stop loss value', 'error', 'activeTrades');
+                return;
+            }
+            
+            const result = await apiCall(`/trade/update_sl/${tradeId}`, 'POST', { sl_points: slPoints });
+            
+            if (result.success) {
+                showAlert(`✅ Stop loss updated to ${slPoints} points`, 'success', 'activeTrades');
+                loadActiveTrades();
+            } else {
+                showAlert(`❌ Failed to update stop loss: ${result.error}`, 'error', 'activeTrades');
+            }
+        }
+        
+        // Stop all trades
+        async function stopAllTrades() {
+            if (!confirm('Are you sure you want to close ALL active trades?')) {
+                return;
+            }
+            
+            showAlert('Closing all trades...', 'info', 'activeTrades');
+            
+            const result = await apiCall('/trade/stop_all', 'POST');
+            
+            if (result.success) {
+                let message = `✅ ${result.message}\n`;
+                result.results.forEach(r => {
+                    message += `Trade ${r.trade_id}: ${r.message}\n`;
+                });
+                showAlert(message, 'success', 'activeTrades');
+                loadActiveTrades();
+                loadTradeHistory();
+            } else {
+                showAlert(`❌ Failed to stop all trades: ${result.error}`, 'error', 'activeTrades');
+            }
+        }
+        
+        // Load active trades
+         async function loadActiveTrades() {
+        const result = await apiCall('/trades/active');
+        const container = document.getElementById('activeTrades');
+        
+        if (result.success) {
+            if (result.trades.length === 0) {
+                container.innerHTML = '<div class="alert info">No active trades</div>';
+                return;
+            }
+            
+            container.innerHTML = result.trades.map(trade => {
+                const currentProfit = trade.current_profit || 0;
+                const profitClass = currentProfit > 0 ? 'profit-positive' : 
+                                  currentProfit < 0 ? 'profit-negative' : 'profit-neutral';
+                const profitBadge = currentProfit > 0 ? 'positive' : 
+                                  currentProfit < 0 ? 'negative' : 'neutral';
+                
+                return `
+                    <div class="trade-item">
+                        <div class="trade-header">
+                            <span class="trade-symbol">${trade.symbol}</span>
+                            <span class="trade-type ${trade.type.toLowerCase()}">${trade.type}</span>
+                            <span class="profit-badge ${profitBadge}">
+                                ${currentProfit > 0 ? '▲' : currentProfit < 0 ? '▼' : '●'} 
+                                ${currentProfit.toFixed(2)}
+                            </span>
+                        </div>
+                        <div class="trade-details">
+                            <div>Lots: ${trade.lots}</div>
+                            <div>Entry: ${trade.entry_price}</div>
+                            <div>Current: <span class="${profitClass}">${currentProfit.toFixed(2)}</span></div>
+                            <div>P/L %: ${trade.profit_percentage || 0}%</div>
+                        </div>
+                        <div class="trade-details">
+                            <div>SL: ${trade.sl_points} pts (${trade.potential_loss || 0})</div>
+                            <div>TP: ${trade.tp_points} pts (${trade.potential_profit || 0})</div>
+                            <div>ID: ${trade.trade_id}</div>
+                            <div>Source: ${trade.source || 'manual'}</div>
+                        </div>
+                        <div class="trade-actions">
+                            <button onclick="closeTrade('${trade.trade_id}')" class="btn btn-danger">Close</button>
+                            <button onclick="updateStopLoss('${trade.trade_id}')" class="btn">Update SL</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        } else {
+            container.innerHTML = `<div class="alert error">Error loading active trades: ${result.error}</div>`;
+        }
+    }
+
+        // Load trade history
+         async function loadTradeHistory() {
+        const filter = document.getElementById('historyFilter').value;
+        const url = filter ? `/trades/history?status=${filter}` : '/trades/history';
+        
+        const result = await apiCall(url);
+        const container = document.getElementById('tradeHistory');
+        
+        if (result.success) {
+            if (result.trades.length === 0) {
+                container.innerHTML = '<div class="alert info">No trade history</div>';
+                return;
+            }
+            
+            container.innerHTML = result.trades.map(trade => {
+                const profit = trade.current_profit || trade.profit || 0;
+                const profitClass = profit > 0 ? 'profit-positive' : 
+                                  profit < 0 ? 'profit-negative' : 'profit-neutral';
+                const profitBadge = profit > 0 ? 'positive' : 
+                                  profit < 0 ? 'negative' : 'neutral';
+                
+                return `
+                    <div class="trade-item">
+                        <div class="trade-header">
+                            <span class="trade-symbol">${trade.symbol}</span>
+                            <span class="trade-type ${trade.type.toLowerCase()}">${trade.type}</span>
+                            <span class="status ${trade.status.toLowerCase()}">${trade.status}</span>
+                            <span class="profit-badge ${profitBadge}">
+                                ${profit > 0 ? '▲' : profit < 0 ? '▼' : '●'} 
+                                ${profit.toFixed(2)}
+                            </span>
+                        </div>
+                        <div class="trade-details">
+                            <div>Lots: ${trade.lots}</div>
+                            <div>Entry: ${trade.entry_price}</div>
+                            <div>Profit: <span class="${profitClass}">${profit.toFixed(2)}</span></div>
+                            <div>P/L %: ${trade.profit_percentage || 0}%</div>
+                        </div>
+                        <div class="trade-details">
+                            <div>ID: ${trade.trade_id}</div>
+                            <div>Time: ${new Date(trade.timestamp).toLocaleString()}</div>
+                            <div>Source: ${trade.source || 'manual'}</div>
+                        </div>
+                        ${trade.close_time ? `
+                        <div class="trade-details">
+                            <div>Close: ${trade.close_price}</div>
+                            <div>Close Time: ${new Date(trade.close_time).toLocaleString()}</div>
+                        </div>
+                        ` : ''}
+                    </div>
+                `;
+            }).join('');
+        } else {
+            container.innerHTML = `<div class="alert error">Error loading trade history: ${result.error}</div>`;
+        }
+    }
+        
+        // Initialize the application
+        document.getElementById('tradeForm').addEventListener('submit', placeTrade);
+        
+        // Load initial data
+        checkHealth();
+        loadActiveTrades();
+        loadTradeHistory();
+        
+        // Refresh health status every 30 seconds
+        setInterval(checkHealth, 30000);
+        
+        // Refresh active trades every 10 seconds
+        setInterval(loadActiveTrades, 10000);
+    </script>
+</body>
+</html>

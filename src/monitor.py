@@ -60,16 +60,15 @@ class TradingMonitor:
         if deals is None or len(deals) == 0:
             return []
         
-        # Filter out balance operations and group by position
         trade_deals = [d for d in deals if d.entry != mt5.DEAL_ENTRY_IN]
         
         history = []
         for deal in trade_deals:
-            if deal.entry == mt5.DEAL_ENTRY_OUT:  # Closing deal
+            if deal.entry == mt5.DEAL_ENTRY_OUT:
                 history.append({
                     'ticket': deal.position_id,
                     'symbol': deal.symbol,
-                    'type': 'BUY' if deal.type == mt5.DEAL_TYPE_SELL else 'SELL',  # Opposite
+                    'type': 'BUY' if deal.type == mt5.DEAL_TYPE_SELL else 'SELL',
                     'volume': deal.volume,
                     'profit': deal.profit,
                     'time': datetime.fromtimestamp(deal.time)
@@ -90,7 +89,6 @@ class TradingMonitor:
             pips = (pos['current_price'] - pos['open_price']) / pip_size
         else:
             pips = (pos['open_price'] - pos['current_price']) / pip_size
-        
         return round(pips, 1)
     
     def display_monitor(self):
@@ -101,7 +99,6 @@ class TradingMonitor:
         print(f"SCALPING BOT MONITOR - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
         print("=" * 100)
         
-        # Account Summary
         account = self.get_account_info()
         if account:
             print("\nACCOUNT SUMMARY")
@@ -113,9 +110,8 @@ class TradingMonitor:
             print(f"Profit         : ${account['profit']:.2f}")
             print(f"Margin Level   : {account['margin_level']:.2f}%")
         else:
-            print("\n⚠️  Could not retrieve account information")
+            print("\nCould not retrieve account information")
         
-        # Open Positions
         positions = self.get_open_positions()
         print(f"\nOPEN POSITIONS ({len(positions)} active)")
         print("-" * 100)
@@ -137,39 +133,29 @@ class TradingMonitor:
                     f"${pos['profit']:.2f}",
                     pos['time'].strftime('%Y-%m-%d %H:%M:%S')
                 ])
-            
-            headers = ['Ticket', 'Symbol', 'Type', 'Volume', 'Open Price', 'Current', 
-                      'SL', 'TP', 'Pips', 'Profit', 'Time']
+            headers = ['Ticket', 'Symbol', 'Type', 'Volume', 'Open Price', 'Current', 'SL', 'TP', 'Pips', 'Profit', 'Time']
             print(tabulate(table_data, headers=headers, tablefmt='grid'))
         else:
-            print("✓ No open positions - waiting for trading signals")
-        
-        # Today's Performance
+            print("No open positions - waiting for trading signals")
         history = self.get_todays_history()
         print(f"\nTODAY'S PERFORMANCE ({len(history)} closed trades)")
         print("-" * 100)
-        
         if history:
             total_profit = sum(h['profit'] for h in history)
             winning_trades = [h for h in history if h['profit'] > 0]
             losing_trades = [h for h in history if h['profit'] < 0]
-            
             print(f"Total Trades   : {len(history)}")
             print(f"Winning Trades : {len(winning_trades)} ({len(winning_trades)/len(history)*100:.1f}%)")
             print(f"Losing Trades  : {len(losing_trades)} ({len(losing_trades)/len(history)*100:.1f}%)")
             print(f"Total P/L      : ${total_profit:.2f}")
-            
             if winning_trades:
                 avg_win = sum(h['profit'] for h in winning_trades) / len(winning_trades)
                 print(f"Avg Win        : ${avg_win:.2f}")
-            
             if losing_trades:
                 avg_loss = sum(h['profit'] for h in losing_trades) / len(losing_trades)
                 print(f"Avg Loss       : ${avg_loss:.2f}")
         else:
             print("✓ No closed trades today - bot is monitoring for opportunities")
-        
-        # Recent Trades
         print(f"\nRECENT TRADE HISTORY (Last 10)")
         print("-" * 100)
         
@@ -187,18 +173,15 @@ class TradingMonitor:
                     profit_indicator,
                     h['time'].strftime('%H:%M:%S')
                 ])
-            
             headers = ['Ticket', 'Symbol', 'Type', 'Volume', 'Profit', 'Result', 'Close Time']
             print(tabulate(table_data, headers=headers, tablefmt='grid'))
         else:
             print("Waiting for first trade execution...")
-        
-        # Bot Status
         print("\n" + "=" * 100)
         if self.symbol:
-            print(f"Monitoring: {self.symbol} | Status: ✓ ACTIVE | Last Update: {datetime.now().strftime('%H:%M:%S')}")
+            print(f"Monitoring: {self.symbol} | Status: ACTIVE | Last Update: {datetime.now().strftime('%H:%M:%S')}")
         else:
-            print(f"Monitoring: ALL SYMBOLS | Status: ✓ ACTIVE | Last Update: {datetime.now().strftime('%H:%M:%S')}")
+            print(f"Monitoring: ALL SYMBOLS | Status: ACTIVE | Last Update: {datetime.now().strftime('%H:%M:%S')}")
         print("=" * 100)
         print("Press Ctrl+C to stop monitoring")
         print("=" * 100)

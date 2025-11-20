@@ -28,7 +28,6 @@ def connect_mt5(login=None, password=None, server=None, path=None):
         if not mt5.initialize():
             logger.error("MT5 initialization failed")
             return False
-            
     if login:
         ok = mt5.login(login, password=password, server=server)
         if not ok:
@@ -207,14 +206,13 @@ def place_order_with_slippage_check(symbol, order_type, lots=0.01, sl_pips=8, tp
             slippage = abs(executed_price - initial_price) / pip_size
             
             if slippage > max_slippage_pips:
-                logger.warning(f"Slippage too high: {slippage:.2f} pips (max: {max_slippage_pips})")
-                logger.warning(f"  Initial: {initial_price:.5f}, Executed: {executed_price:.5f}")
+                logger.warning(f" Slippage too high: {slippage:.2f} pips (max: {max_slippage_pips})")
+                logger.warning(f" Initial: {initial_price:.5f}, Executed: {executed_price:.5f}")
                 
                 positions = mt5.positions_get(symbol=symbol)
                 if positions and len(positions) > 0:
                     close_position(positions[-1])
                     logger.info("Position closed due to excessive slippage")
-                
                 time.sleep(0.5)
                 continue
             else:
@@ -223,10 +221,8 @@ def place_order_with_slippage_check(symbol, order_type, lots=0.01, sl_pips=8, tp
         else:
             time.sleep(0.3)
             continue
-    
     logger.error(f"Failed to execute order with acceptable slippage after {max_retries} attempts")
     return None
-
 
 def close_position(position, deviation=50, max_retries=3):
     """
@@ -245,7 +241,6 @@ def close_position(position, deviation=50, max_retries=3):
         else:
             price = tick.ask
             order_type = mt5.ORDER_TYPE_BUY
-        
         current_deviation = deviation + (attempt * 10)
         
         request = {
@@ -295,10 +290,8 @@ def place_order(symbol, order_type, lots=0.01, price=None, sl=None, tp=None, dev
             digits = symbol_info.digits
             pip_size = 0.0001 if digits == 5 else 0.01 if digits == 3 else 0.001
             current_price = tick.ask if order_type == 'buy' else tick.bid
-            
             sl_pips = abs(current_price - sl) / pip_size if sl else 8
             tp_pips = abs(tp - current_price) / pip_size if tp else 12
-            
             return place_order_market_improved(symbol, order_type, lots, sl_pips, tp_pips, deviation, max_retries)
 
     return place_order_market_improved(symbol, order_type, lots, 8, 12, deviation, max_retries)

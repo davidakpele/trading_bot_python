@@ -61,7 +61,6 @@ def train_model(csv_path, model_out_path=None):
     print(classification_report(y_test, y_pred, target_names=le.classes_))
     print("\nSignal distribution in training data:")
     print(df['signal'].value_counts())
-    
     return clf
 
 if __name__ == "__main__":

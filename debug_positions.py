@@ -5,20 +5,17 @@ from datetime import datetime
 
 def debug_all_positions():
     print("=== MT5 POSITIONS DEBUG ===")
-    
-    # Initialize MT5
     if not mt5.initialize():
         print("Failed to initialize MT5")
         return
     
     print("MT5 initialized successfully")
     
-    # Get ALL positions
     positions = mt5.positions_get()
     print(f" MT5.positions_get() returned: {len(positions) if positions else 0} positions")
     
     if positions:
-        print("\n🔍 DETAILED POSITION INFO:")
+        print("\nDETAILED POSITION INFO:")
         for i, pos in enumerate(positions):
             print(f"Position {i+1}:")
             print(f"  Symbol: {pos.symbol}")
@@ -33,9 +30,8 @@ def debug_all_positions():
             print(f"  TP: {pos.tp:.5f}" if pos.tp > 0 else "  TP: None")
             print()
     else:
-        print("❌ No positions found in MT5 account")
-    
-    # Test symbol filtering
+        print(" No positions found in MT5 account")
+        
     print("\nSYMBOL FILTERING TEST:")
     symbols_to_test = ["EURUSD", "GBPUSD", "USDJPY", "AUDUSD"]
     for symbol in symbols_to_test:
